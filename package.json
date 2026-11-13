@@ -1,0 +1,56 @@
+{
+  "name": "tlineage-local-rehearsal",
+  "version": "0.0.0-rehearsal.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.15.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "tlineage": "./dist/cli.js"
+  },
+  "scripts": {
+    "tlineage": "node dist/cli.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && prettier --check 'packages/*/src/*.ts' 'scripts/*.mjs' scripts/sanitize-fixture '*.config.*'",
+    "test": "vitest run --maxWorkers=2",
+    "build": "tsup",
+    "verify": "pnpm audit:fixtures && pnpm typecheck && pnpm lint && pnpm test && pnpm build",
+    "audit:fixtures": "node scripts/audit-fixtures"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.6.0",
+    "tsup": "^8.5.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^3.2.0"
+  },
+  "optionalDependencies": {
+    "fzstd": "0.1.1"
+  },
+  "license": "MIT",
+  "naming": {
+    "displayName": "TLineage",
+    "repositoryName": "TLineage",
+    "command": "tlineage",
+    "mcpService": "tlineage",
+    "toolPrefix": "tlineage_",
+    "skill": "tlineage",
+    "dataDirectory": ".tlineage",
+    "homeVariable": "TLINEAGE_HOME",
+    "repositoryDirectory": ".tlineage",
+    "managedMarker": ".tlineage-managed",
+    "backupDirectory": "tlineage-install-backups"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tangjh-hub/TLineage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/tangjh-hub/TLineage/issues"
+  },
+  "homepage": "https://github.com/tangjh-hub/TLineage"
+}

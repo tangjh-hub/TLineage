@@ -1,0 +1,243 @@
+#!/usr/bin/env node
+import { createReadStream } from "node:fs";
+import { pipeline } from "node:stream/promises";
+import { pathToFileURL } from "node:url";
+import * as zlib from "node:zlib";
+
+const maxLineBytes = 32 * 1024 * 1024;
+const schemaKeys = new Set(
+  `timestamp type payload id session_id cli_version cwd git branch commit_hash
+  repository_url source thread_source subagent thread_spawn parent_thread_id
+  forked_from_id model_provider originator base_instructions agent_nickname
+  agent_path agent_role depth creator_account_id creator_user_id runtime_workspace_roots
+  context_window history_base history_mode multi_agent_version subagent_history_start_ordinal
+  dynamic_tools name namespace arguments input output status call_id message content
+  text role item thread_id turn_id completed_at_ms started_at_ms info rate_limits
+  total_token_usage last_token_usage model_context_window last_usage_includes_reasoning
+  input_tokens cached_input_tokens cache_write_input_tokens output_tokens
+  reasoning_output_tokens total_tokens replacement_history window_id window_number
+  previous_window_id first_window_id compaction_response_id latest_token_usage_record
+  replacement_history_metadata resume_metadata retained_context guardian_history
+  internal_chat_message_metadata_passthrough changes path diff exit_code cmd workdir
+  command parsed_cmd aggregated_output formatted_output process_id duration kind
+  old_path new_path move_path unified_diff stdout stderr ordinal response_id
+  root_turn_id thread_token_usage turn_token_usage plugin_id script_path
+  uuid parentUuid sessionId gitBranch version isSidechain model usage requestId`
+    .trim()
+    .split(/\s+/),
+);
+const enumValues = {
+  type: new Set(
+    `session_meta turn_context response_item event_msg compacted token_count
+    token_usage_record world_state realtime_item inter_agent_communication_metadata
+    message reasoning function_call function_call_output custom_tool_call
+    custom_tool_call_output file_change FileChange CommandExecution patch_apply_begin patch_apply_end
+    exec_command_begin exec_command_end item_started item_completed
+    task_started task_complete turn_aborted user_message agent_message
+    context_compacted input_text output_text text thinking tool_use tool_result
+    user assistant system summary file-history-snapshot`
+      .trim()
+      .split(/\s+/),
+  ),
+  role: new Set(["user", "assistant", "system", "developer", "tool"]),
+  source: new Set([
+    "cli",
+    "exec",
+    "vscode",
+    "app-server",
+    "desktop",
+    "unknown",
+  ]),
+  thread_source: new Set(["user", "subagent", "fork", "exec"]),
+  name: new Set([
+    "apply_patch",
+    "exec_command",
+    "write_stdin",
+    "shell_command",
+    "Bash",
+    "Edit",
+    "Write",
+    "MultiEdit",
+  ]),
+  status: new Set(["completed", "failed", "in_progress", "incomplete"]),
+};
+const idKeys = new Set(
+  `id session_id parent_thread_id forked_from_id thread_id turn_id call_id
+  window_id previous_window_id first_window_id compaction_response_id response_id root_turn_id
+  uuid parentUuid sessionId requestId`
+    .trim()
+    .split(/\s+/),
+);
+
+export function createSanitizer() {
+  const ids = new Map();
+  const times = new Map();
+
+  function sanitize(value, key = "") {
+    if (Array.isArray(value)) {
+      return value.map((entry) => sanitize(entry, key));
+    }
+
+    if (value !== null && typeof value === "object") {
+      let unknown = 0;
+      return Object.fromEntries(
+        Object.entries(value).map(([field, entry]) => [
+          schemaKeys.has(field) ? field : `redacted_key_${++unknown}`,
+          sanitize(entry, schemaKeys.has(field) ? field : ""),
+        ]),
+      );
+    }
+
+    if (typeof value === "number") {
+      return key === "exit_code" && value !== 0 ? 1 : 0;
+    }
+
+    if (typeof value !== "string") {
+      return value;
+    }
+
+    if (idKeys.has(key)) {
+      if (!ids.has(value)) {
+        const serial = String(ids.size + 1).padStart(12, "0");
+        ids.set(value, `00000000-0000-4000-8000-${serial}`);
+      }
+      return ids.get(value);
+    }
+
+    if (key === "timestamp" && /^\d{4}-\d\d-\d\dT/.test(value)) {
+      if (!times.has(value)) {
+        times.set(
+          value,
+          new Date(Date.UTC(2000, 0, 1, 0, 0, times.size)).toISOString(),
+        );
+      }
+      return times.get(value);
+    }
+
+    if (Object.hasOwn(enumValues, key) && enumValues[key].has(value)) {
+      return value;
+    }
+
+    if (
+      (key === "cli_version" || key === "version") &&
+      /^\d{1,3}\.\d{1,3}\.\d{1,3}(?:-(?:alpha|beta|rc|dev)(?:\.\d{1,4}){0,2})?$/.test(
+        value,
+      )
+    ) {
+      return value;
+    }
+
+    if (key === "output") {
+      const exitCode =
+        /^Chunk ID:[^\n]*\r?\nWall time:[^\n]*\r?\nProcess exited with code (\d+)(?:\r?\n|$)/.exec(
+          value,
+        );
+      if (exitCode) {
+        const status = exitCode[1] === "0" ? 0 : 1;
+        return `Chunk ID: fixture\nWall time: 0 seconds\nProcess exited with code ${status}\nOutput:\n[REDACTED]`;
+      }
+    }
+
+    if (value.length > 4096 || /^data:[^;,]+;base64,/.test(value)) {
+      return "[BLOB]";
+    }
+    return "x".repeat(Math.min(value.length, 64));
+  }
+
+  return sanitize;
+}
+
+export async function* sanitizeFile(file, sanitize = createSanitizer()) {
+  const compressed = file.endsWith(".zst");
+  if (compressed && typeof zlib.createZstdDecompress !== "function") {
+    throw new Error(
+      "Zstandard decompression is unavailable in this Node version",
+    );
+  }
+  const input = createReadStream(file);
+  const decompressor = compressed ? zlib.createZstdDecompress() : null;
+  const transfer = decompressor ? pipeline(input, decompressor) : null;
+  // The async iterator also reports stream errors. Keep the pipeline handled if
+  // the caller stops reading after collecting a bounded sample.
+  transfer?.catch(() => {});
+  let chunks = [];
+  let length = 0;
+  let oversized = false;
+
+  function append(chunk) {
+    if (oversized || length + chunk.length > maxLineBytes) {
+      oversized = true;
+      chunks = [];
+    } else if (chunk.length > 0) {
+      chunks.push(chunk);
+      length += chunk.length;
+    }
+  }
+
+  function finish(terminated) {
+    let result;
+    if (oversized) {
+      result = '{"type":"redacted_oversized_line"}';
+    } else if (length > 0) {
+      const line = Buffer.concat(chunks, length)
+        .toString("utf8")
+        .replace(/^\uFEFF/, "");
+      if (line.trim()) {
+        try {
+          result = JSON.stringify(sanitize(JSON.parse(line)));
+        } catch (error) {
+          if (!(error instanceof SyntaxError)) throw error;
+          result = '{"type":"redacted_invalid_line"';
+        }
+      }
+    }
+    chunks = [];
+    length = 0;
+    oversized = false;
+    return result === undefined ? undefined : result + (terminated ? "\n" : "");
+  }
+
+  try {
+    for await (const chunk of decompressor ?? input) {
+      let start = 0;
+      for (
+        let end = chunk.indexOf(10);
+        end !== -1;
+        end = chunk.indexOf(10, start)
+      ) {
+        append(chunk.subarray(start, end));
+        const line = finish(true);
+        if (line !== undefined) yield line;
+        start = end + 1;
+      }
+      append(chunk.subarray(start));
+    }
+    const line = finish(false);
+    if (line !== undefined) yield line;
+    await transfer;
+  } finally {
+    input.destroy();
+    decompressor?.destroy();
+  }
+}
+
+async function main() {
+  if (process.argv.length !== 3) {
+    process.stderr.write("Usage: sanitize-fixture <input.jsonl[.zst]>\n");
+    process.exitCode = 2;
+    return;
+  }
+  try {
+    await pipeline(sanitizeFile(process.argv[2]), process.stdout);
+  } catch {
+    process.stderr.write("Could not sanitize the fixture.\n");
+    process.exitCode = 1;
+  }
+}
+
+if (
+  process.argv[1] &&
+  pathToFileURL(process.argv[1]).href === import.meta.url
+) {
+  await main();
+}

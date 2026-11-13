@@ -1,0 +1,286 @@
+[
+  {
+    "string": "agent_role",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "aggregated_output",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "call_id",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "cmd",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "compaction_response_id",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "completed_at_ms",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "content",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "depth",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "internal_chat_message_metadata_passthrough",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "item",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "kind",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "model",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "name",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "output",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "parsed_cmd",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "path",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "process_id",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "rate_limits",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "role",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "started_at_ms",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "stdout",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "subagent",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "text",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "thread_spawn",
+    "category": "key",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13"
+  },
+  {
+    "string": "0.142.0",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "cli_version"
+  },
+  {
+    "string": "0.142.0-alpha.6",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "cli_version"
+  },
+  {
+    "string": "0.162.0-alpha.2",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "cli_version"
+  },
+  {
+    "string": "0.163.0-alpha.10.2",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "cli_version"
+  },
+  {
+    "string": "0.166.0-alpha.5.1",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "cli_version"
+  },
+  {
+    "string": "0.167.0-alpha.3.2",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "cli_version"
+  },
+  {
+    "string": "developer",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "role"
+  },
+  {
+    "string": "user",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "role"
+  },
+  {
+    "string": "vscode",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "source"
+  },
+  {
+    "string": "completed",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "status"
+  },
+  {
+    "string": "failed",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "status"
+  },
+  {
+    "string": "subagent",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "thread_source"
+  },
+  {
+    "string": "user",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "thread_source"
+  },
+  {
+    "string": "compacted",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "type"
+  },
+  {
+    "string": "event_msg",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "type"
+  },
+  {
+    "string": "function_call_output",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "type"
+  },
+  {
+    "string": "input_text",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "type"
+  },
+  {
+    "string": "message",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "type"
+  },
+  {
+    "string": "response_item",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "type"
+  },
+  {
+    "string": "task_started",
+    "category": "value",
+    "reviewer": "owner",
+    "reviewedAt": "2026-11-13",
+    "field": "type"
+  }
+]

@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "projects": [
+    {
+      "cwd": "<synthetic>/checkout",
+      "repoRoot": "<synthetic>/checkout",
+      "lanes": [
+        {
+          "id": "lane:00000000-0000-4000-8000-000000000001",
+          "name": ".",
+          "nameSource": "paths",
+          "usage": {
+            "scope": "inFile",
+            "quality": "exact",
+            "provenance": "inferred",
+            "inFile": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "reasoning": 0,
+              "total": 0
+            },
+            "baseline": null,
+            "threadCumulative": null
+          },
+          "relationships": [],
+          "sessions": [
+            {
+              "id": "00000000-0000-4000-8000-000000000001",
+              "cwd": "<synthetic>/checkout",
+              "worktreePath": "<synthetic>/checkout",
+              "gitBranch": "xxxxxxxxxxxxxxxx",
+              "startedAt": "2000-01-01T00:00:01.000Z",
+              "endedAt": "2000-01-01T00:08:30.000Z",
+              "title": "Codex 会话",
+              "titleProvenance": "inferred",
+              "usage": {
+                "scope": "inFile",
+                "quality": "exact",
+                "provenance": "inferred",
+                "inFile": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 0
+                },
+                "baseline": null,
+                "threadCumulative": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 0,
+                  "source": "token_count",
+                  "provenance": "verified"
+                }
+              },
+              "state": "done",
+              "stateReasons": [
+                "没有待完成工具调用或未恢复的测试、构建失败"
+              ],
+              "stateProvenance": "inferred"
+            }
+          ]
+        },
+        {
+          "id": "lane:edit-a",
+          "name": "合成主线",
+          "nameSource": "override",
+          "usage": {
+            "scope": "inFile",
+            "quality": "exact",
+            "provenance": "inferred",
+            "inFile": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "reasoning": 0,
+              "total": 15
+            },
+            "baseline": null,
+            "threadCumulative": null
+          },
+          "relationships": [
+            {
+              "from": "edit-a",
+              "to": "edit-b",
+              "kind": "shared-file",
+              "provenance": "verified",
+              "evidence": {
+                "source": "FileChange",
+                "files": [
+                  "src/core/main.ts"
+                ]
+              }
+            },
+            {
+              "from": "edit-a",
+              "to": "edit-b",
+              "kind": "subagent",
+              "provenance": "verified",
+              "evidence": {
+                "source": "session_meta",
+                "field": "parent_thread_id",
+                "sessionId": "edit-b"
+              }
+            }
+          ],
+          "sessions": [
+            {
+              "id": "edit-a",
+              "cwd": "<synthetic>/checkout",
+              "worktreePath": "<synthetic>/checkout",
+              "gitBranch": null,
+              "startedAt": "2000-01-02T00:00:00.000Z",
+              "endedAt": "2000-01-02T00:00:00.000Z",
+              "title": "Codex 会话",
+              "titleProvenance": "inferred",
+              "usage": {
+                "scope": "inFile",
+                "quality": "exact",
+                "provenance": "inferred",
+                "inFile": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5
+                },
+                "baseline": null,
+                "threadCumulative": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5,
+                  "source": "token_count",
+                  "provenance": "verified"
+                }
+              },
+              "state": "done",
+              "stateReasons": [
+                "没有待完成工具调用或未恢复的测试、构建失败"
+              ],
+              "stateProvenance": "inferred"
+            },
+            {
+              "id": "edit-b",
+              "cwd": "<synthetic>/checkout",
+              "worktreePath": "<synthetic>/checkout",
+              "gitBranch": null,
+              "startedAt": "2000-01-03T00:00:00.000Z",
+              "endedAt": "2000-01-03T00:00:00.000Z",
+              "title": "Codex 会话",
+              "titleProvenance": "inferred",
+              "usage": {
+                "scope": "inFile",
+                "quality": "exact",
+                "provenance": "inferred",
+                "inFile": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5
+                },
+                "baseline": null,
+                "threadCumulative": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5,
+                  "source": "token_count",
+                  "provenance": "verified"
+                }
+              },
+              "state": "done",
+              "stateReasons": [
+                "没有待完成工具调用或未恢复的测试、构建失败"
+              ],
+              "stateProvenance": "inferred"
+            },
+            {
+              "id": "edit-linked",
+              "cwd": "<synthetic>/linked",
+              "worktreePath": "<synthetic>/linked",
+              "gitBranch": null,
+              "startedAt": "2000-01-04T00:00:00.000Z",
+              "endedAt": "2000-01-04T00:00:00.000Z",
+              "title": "Codex 会话",
+              "titleProvenance": "inferred",
+              "usage": {
+                "scope": "inFile",
+                "quality": "exact",
+                "provenance": "inferred",
+                "inFile": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5
+                },
+                "baseline": null,
+                "threadCumulative": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5,
+                  "source": "token_count",
+                  "provenance": "verified"
+                }
+              },
+              "state": "done",
+              "stateReasons": [
+                "没有待完成工具调用或未恢复的测试、构建失败"
+              ],
+              "stateProvenance": "inferred"
+            }
+          ]
+        },
+        {
+          "id": "lane:misc",
+          "name": "杂项",
+          "nameSource": "misc",
+          "usage": {
+            "scope": "inFile",
+            "quality": "exact",
+            "provenance": "inferred",
+            "inFile": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "reasoning": 0,
+              "total": 5
+            },
+            "baseline": null,
+            "threadCumulative": null
+          },
+          "relationships": [],
+          "sessions": [
+            {
+              "id": "misc",
+              "cwd": "<synthetic>/linked",
+              "worktreePath": "<synthetic>/linked",
+              "gitBranch": null,
+              "startedAt": "2000-01-05T00:00:00.000Z",
+              "endedAt": "2000-01-05T00:00:00.000Z",
+              "title": "Codex 会话",
+              "titleProvenance": "inferred",
+              "usage": {
+                "scope": "inFile",
+                "quality": "exact",
+                "provenance": "inferred",
+                "inFile": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5
+                },
+                "baseline": null,
+                "threadCumulative": {
+                  "input": 0,
+                  "output": 0,
+                  "cacheRead": 0,
+                  "cacheWrite": 0,
+                  "reasoning": 0,
+                  "total": 5,
+                  "source": "token_count",
+                  "provenance": "verified"
+                }
+              },
+              "state": "done",
+              "stateReasons": [
+                "没有待完成工具调用或未恢复的测试、构建失败"
+              ],
+              "stateProvenance": "inferred"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

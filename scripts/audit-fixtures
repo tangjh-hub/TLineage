@@ -1,0 +1,202 @@
+#!/usr/bin/env node
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
+import { join } from "node:path";
+import { createRequire } from "node:module";
+import * as zlib from "node:zlib";
+
+const root = new URL("../", import.meta.url);
+const fixtures = new URL("fixtures/", root);
+const docs = readFileSync(new URL("docs/formats.generated.md", root), "utf8");
+const vocabulary = new Set(
+  [...docs.matchAll(/`([A-Za-z_][A-Za-z0-9_]*)`/g)].map((match) => match[1]),
+);
+const documentedValues = new Set([
+  "session_meta",
+  "token_count",
+  "token_usage_record",
+  "item_completed",
+  "FileChange",
+  "CommandExecution",
+  "apply_patch",
+  "exec_command",
+  "custom_tool_call",
+  "function_call",
+  "world_state",
+  "realtime_item",
+  "inter_agent_communication_metadata",
+  "0.133.0",
+]);
+const approved = new Set();
+const ownerVocabulary = JSON.parse(
+  readFileSync(new URL("fixtures/vocabulary.json", root), "utf8"),
+);
+if (!Array.isArray(ownerVocabulary))
+  throw new Error("Expected a reviewed vocabulary array");
+for (const entry of ownerVocabulary) {
+  if (
+    !entry ||
+    typeof entry.string !== "string" ||
+    !["key", "value"].includes(entry.category) ||
+    (entry.category === "key"
+      ? Object.hasOwn(entry, "field")
+      : typeof entry.field !== "string" || !entry.field) ||
+    entry.reviewer !== "owner" ||
+    typeof entry.reviewedAt !== "string" ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(entry.reviewedAt) ||
+    !Number.isFinite(Date.parse(entry.reviewedAt)) ||
+    new Date(entry.reviewedAt).toISOString().slice(0, 10) !== entry.reviewedAt
+  )
+    throw new Error("Invalid owner vocabulary entry");
+  const identity = JSON.stringify([
+    entry.category,
+    entry.field ?? null,
+    entry.string,
+  ]);
+  if (approved.has(identity))
+    throw new Error("Duplicate owner vocabulary entry");
+  approved.add(identity);
+}
+const fixed =
+  /^(?:\[BLOB\]|Chunk ID: fixture\nWall time: 0 seconds\nProcess exited with code [01]\nOutput:\n\[REDACTED\]|redacted_(?:oversized|invalid)_line)$/;
+const idKeys = new Set(
+  "id session_id parent_thread_id forked_from_id thread_id turn_id call_id window_id previous_window_id first_window_id compaction_response_id response_id root_turn_id uuid parentUuid sessionId requestId".split(
+    " ",
+  ),
+);
+const privacy = [
+  /(?:^|[\s"'(=])(?:\/(?!\/)[\w.~@-]+|[a-z]:[\\/]|\\\\[^\\\s]+\\)/i,
+];
+const identifiers = [homedir().split(/[\\/]/).pop(), ...process.argv.slice(2)]
+  .filter(Boolean)
+  .map(
+    (value) =>
+      new RegExp(
+        "(?<![\\w-])" +
+          value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") +
+          "(?![\\w-])",
+        "i",
+      ),
+  );
+
+const details = [];
+let failed = false;
+for (const file of readdirSync(fixtures)
+  .filter((name) => /\.jsonl(?:\.zst)?$/.test(name))
+  .sort()) {
+  const input = readFileSync(new URL(file, fixtures));
+  const bytes = !file.endsWith(".zst")
+    ? input
+    : typeof zlib.zstdDecompressSync === "function"
+      ? zlib.zstdDecompressSync(input)
+      : createRequire(import.meta.url)("fzstd").decompress(input);
+  const counts = { a: 0, b: 0, c: 0, d: 0, long: 0, privacy: 0, malformed: 0 };
+  function inspect(value, path, line, key, field) {
+    const isFixed = !field && fixed.test(value);
+    const time =
+      !field &&
+      key === "timestamp" &&
+      /^2000-01-01T00:\d\d:\d\d\.000Z$/.test(value) &&
+      Number.isFinite(Date.parse(value)) &&
+      new Date(value).toISOString() === value;
+    let category = "d";
+    if (
+      isFixed ||
+      (field ? /^redacted_key_[1-9]\d*$/.test(value) : /^x*$/.test(value))
+    )
+      category = "a";
+    else if (
+      time ||
+      (!field &&
+        idKeys.has(key) &&
+        /^00000000-0000-4000-8000-(?!0{12}$)\d{12}$/.test(value))
+    )
+      category = "b";
+    else if (
+      field
+        ? vocabulary.has(value)
+        : ["type", "name", "cli_version"].includes(key) &&
+          documentedValues.has(value)
+    )
+      category = "c";
+    if (
+      category === "d" &&
+      approved.has(
+        JSON.stringify([field ? "key" : "value", field ? null : key, value]),
+      )
+    ) {
+      category = "c";
+      counts.ownerReviewed = (counts.ownerReviewed ?? 0) + 1;
+    }
+    counts[category]++;
+    const long =
+      value.length > 200 &&
+      Array.from(value.slice(0, 402)).length > 200 &&
+      !isFixed;
+    const sensitive =
+      (value.includes("@") &&
+        /[\w.+-]{1,64}@[\w.-]{1,253}\.[a-z]{2,63}\b/i.test(value)) ||
+      [...privacy, ...identifiers].some((pattern) => pattern.test(value));
+    if (long) counts.long++;
+    if (sensitive) counts.privacy++;
+    if (category === "d" || long || sensitive)
+      details.push({
+        file,
+        line,
+        path,
+        kind: field ? "key" : "value",
+        category,
+        long,
+        sensitive,
+        value,
+      });
+  }
+  function visit(value, path, line, key) {
+    if (typeof value === "string") inspect(value, path, line, key, false);
+    else if (Array.isArray(value))
+      value.forEach((entry, index) =>
+        visit(entry, [...path, index], line, key),
+      );
+    else if (value && typeof value === "object")
+      for (const [field, entry] of Object.entries(value)) {
+        const next = [...path, field];
+        inspect(field, next, line, field, true);
+        visit(entry, next, line, field);
+      }
+  }
+  const lines = new TextDecoder("utf-8", { fatal: true })
+    .decode(bytes)
+    .split("\n");
+  for (const [index, raw] of lines.entries()) {
+    if (!raw.trim()) continue;
+    // The exact synthetic truncation probe contains three complete strings.
+    const repaired =
+      file === "codex-partial.jsonl" &&
+      index === lines.length - 1 &&
+      raw === '{"type":"event_msg","payload":'
+        ? raw + "null}"
+        : raw;
+    try {
+      visit(JSON.parse(repaired), [], index + 1);
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+      counts.malformed++;
+      details.push({ file, line: index + 1, malformed: true, value: raw });
+    }
+  }
+  failed ||= Boolean(
+    counts.d || counts.long || counts.privacy || counts.malformed,
+  );
+  console.log(JSON.stringify({ file, ...counts }));
+}
+if (details.length) {
+  const directory = mkdtempSync(join(tmpdir(), "tlineage-fixture-audit-"));
+  const report = join(directory, "details.jsonl");
+  writeFileSync(
+    report,
+    details.map((entry) => JSON.stringify(entry)).join("\n") + "\n",
+    { mode: 0o600, flag: "wx" },
+  );
+  console.log("Private audit details: " + report);
+}
+process.exitCode = failed ? 1 : 0;
